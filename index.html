@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tenorhorn Griffe üben</title>
+<title>Tenorhorn Griffe üben (Violinschlüssel)</title>
 <style>
   body{font-family:system-ui,sans-serif;max-width:640px;margin:20px auto;padding:0 12px;background:#f4f1ea;color:#222}
   h1{font-size:1.4rem}
@@ -31,15 +31,15 @@
   <div class="row" style="margin-bottom:8px">
     <label>Tonbereich:
       <select id="range">
-        <option value="easy">Leicht (Bb2 – F4)</option>
-        <option value="all" selected>Alle (F2 – Bb4)</option>
+        <option value="easy">Leicht (C4 – G5)</option>
+        <option value="all" selected>Alle (G3 – C6)</option>
       </select>
     </label>
     <label><input type="checkbox" id="showNames" checked> Notenname anzeigen</label>
   </div>
 
   <p id="noteName">?</p>
-  <svg id="staff" width="300" height="190" viewBox="0 0 300 190"></svg>
+  <svg id="staff" width="300" height="210" viewBox="0 0 300 210"></svg>
 
   <div class="valves">
     <button class="valve" data-v="1">1</button>
@@ -57,66 +57,66 @@
 </div>
 
 <div class="card">
-  <h2 style="margin-top:0;font-size:1.1rem">Grifftabelle (klingend)</h2>
+  <h2 style="margin-top:0;font-size:1.1rem">Grifftabelle (notiert, Violinschlüssel)</h2>
   <table id="chart"></table>
 </div>
 
 <script>
-// Note: Name, Griff (Ventile), Letter, Vorzeichen, Oktave
-// Klingende Tonhöhen für B-Tenorhorn (3 Ventile)
+// [notierter Ton, Griff]  (B-Tenorhorn, 3 Ventile, notiert im Violinschlüssel)
 const NOTES = [
-  ["F2","1+3"],["Gb2","2+3"],["G2","1+2"],["Ab2","1"],["A2","2"],
-  ["Bb2","0"],["B2","1+2+3"],["C3","1+3"],["Db3","2+3"],["D3","1+2"],
-  ["Eb3","1"],["E3","2"],["F3","0"],["Gb3","2+3"],["G3","1+2"],
-  ["Ab3","1"],["A3","2"],["Bb3","0"],["B3","1+2"],["C4","1"],
-  ["Db4","2"],["D4","0"],["Eb4","1"],["E4","2"],["F4","0"],
-  ["Gb4","2+3"],["G4","1+2"],["Ab4","1"],["A4","2"],["Bb4","0"]
+  ["G3","1+3"],["Ab3","2+3"],["A3","1+2"],["Bb3","1"],["B3","2"],
+  ["C4","0"],["C#4","1+2+3"],["D4","1+3"],["Eb4","2+3"],["E4","1+2"],
+  ["F4","1"],["F#4","2"],["G4","0"],["Ab4","2+3"],["A4","1+2"],
+  ["Bb4","1"],["B4","2"],["C5","0"],["C#5","1+2"],["D5","1"],
+  ["Eb5","2"],["E5","0"],["F5","1"],["F#5","2"],["G5","0"],
+  ["Ab5","2+3"],["A5","1+2"],["Bb5","1"],["B5","2"],["C6","0"]
 ];
 const LETTERS = {C:0,D:1,E:2,F:3,G:4,A:5,B:6};
 
 function parse(name){
   const letter = name[0];
-  const flat = name.includes("b");
+  const acc = name[1]==="b" ? "b" : (name[1]==="#" ? "#" : "");
   const oct = parseInt(name.slice(-1));
-  return {letter, flat, pos: oct*7 + LETTERS[letter]};
+  return {letter, acc, pos: oct*7 + LETTERS[letter]};
 }
+function pretty(name){ return name.replace("b","♭").replace("#","♯"); }
 
 function pool(){
   const r = document.getElementById("range").value;
   if(r==="easy"){
-    const a = NOTES.findIndex(n=>n[0]==="Bb2");
-    const b = NOTES.findIndex(n=>n[0]==="F4");
+    const a = NOTES.findIndex(n=>n[0]==="C4");
+    const b = NOTES.findIndex(n=>n[0]==="G5");
     return NOTES.slice(a,b+1);
   }
   return NOTES;
 }
 
-// Notenlinien (Bassschlüssel): untere Linie = G2 (pos 18)
+// Violinschlüssel: untere Linie = E4 (pos 30)
 function drawStaff(name){
   const svg = document.getElementById("staff");
-  const bottom = 130, step = 8; // halber Linienabstand = 8px
+  const bottom = 150, step = 8;
   let s = "";
   for(let i=0;i<5;i++){
     const y = bottom - i*2*step;
     s += `<line x1="30" x2="270" y1="${y}" y2="${y}" stroke="#222" stroke-width="1.5"/>`;
   }
-  s += `<text x="38" y="${bottom-2*step*2+6}" font-size="22" font-weight="700">𝄢</text>`;
-  s += `<text x="150" y="182" font-size="11" text-anchor="middle" fill="#666">Bassschlüssel (klingend)</text>`;
+  s += `<text x="36" y="${bottom-2}" font-size="58">𝄞</text>`;
+  s += `<text x="150" y="205" font-size="11" text-anchor="middle" fill="#666">Violinschlüssel (notiert für B-Instrument)</text>`;
   if(name){
-    const {pos, flat} = parse(name);
-    const y = bottom - (pos-18)*step;
-    // Hilfslinien
-    if(pos<18){ for(let p=16;p>=pos;p-=2){ const yy=bottom-(p-18)*step; s+=`<line x1="${170-18}" x2="${170+18}" y1="${yy}" y2="${yy}" stroke="#222" stroke-width="1.5"/>`; } }
-    if(pos>26){ for(let p=28;p<=pos;p+=2){ const yy=bottom-(p-18)*step; s+=`<line x1="${170-18}" x2="${170+18}" y1="${yy}" y2="${yy}" stroke="#222" stroke-width="1.5"/>`; } }
-    if(flat) s += `<text x="${170-34}" y="${y+7}" font-size="22">♭</text>`;
-    s += `<ellipse cx="170" cy="${y}" rx="10" ry="7.5" fill="#222" transform="rotate(-15 170 ${y})"/>`;
+    const {pos, acc} = parse(name);
+    const y = bottom - (pos-30)*step;
+    const cx = 175;
+    if(pos<30){ for(let p=28;p>=pos;p-=2){ const yy=bottom-(p-30)*step; s+=`<line x1="${cx-18}" x2="${cx+18}" y1="${yy}" y2="${yy}" stroke="#222" stroke-width="1.5"/>`; } }
+    if(pos>38){ for(let p=40;p<=pos;p+=2){ const yy=bottom-(p-30)*step; s+=`<line x1="${cx-18}" x2="${cx+18}" y1="${yy}" y2="${yy}" stroke="#222" stroke-width="1.5"/>`; } }
+    if(acc==="b") s += `<text x="${cx-36}" y="${y+7}" font-size="22">♭</text>`;
+    if(acc==="#") s += `<text x="${cx-36}" y="${y+8}" font-size="22">♯</text>`;
+    s += `<ellipse cx="${cx}" cy="${y}" rx="10" ry="7.5" fill="#222" transform="rotate(-15 ${cx} ${y})"/>`;
   }
   svg.innerHTML = s;
 }
 
 let current=null, total=0, right=0;
 const on = new Set();
-
 function fmt(g){ return g==="0" ? "offen" : g; }
 
 function newNote(){
@@ -126,8 +126,7 @@ function newNote(){
   current = n;
   on.clear();
   document.querySelectorAll(".valve").forEach(b=>b.classList.remove("on"));
-  const disp = n[0].replace("b","♭");
-  document.getElementById("noteName").textContent = document.getElementById("showNames").checked ? disp : "?";
+  document.getElementById("noteName").textContent = document.getElementById("showNames").checked ? pretty(n[0]) : "?";
   drawStaff(n[0]);
   document.getElementById("msg").textContent = "";
 }
@@ -137,10 +136,7 @@ function setValves(g){
   if(g!=="0") g.split("+").forEach(v=>on.add(v));
   document.querySelectorAll(".valve").forEach(b=>b.classList.toggle("on", on.has(b.dataset.v)));
 }
-
-function currentGriff(){
-  return on.size ? [...on].sort().join("+") : "0";
-}
+function currentGriff(){ return on.size ? [...on].sort().join("+") : "0"; }
 
 document.querySelectorAll(".valve").forEach(b=>{
   b.addEventListener("click",()=>{
@@ -170,7 +166,7 @@ document.getElementById("show").onclick=()=>{
 document.getElementById("next").onclick=newNote;
 document.getElementById("range").onchange=newNote;
 document.getElementById("showNames").onchange=()=>{
-  document.getElementById("noteName").textContent = document.getElementById("showNames").checked ? current[0].replace("b","♭") : "?";
+  document.getElementById("noteName").textContent = document.getElementById("showNames").checked ? pretty(current[0]) : "?";
 };
 
 // Tabelle
@@ -179,8 +175,8 @@ document.getElementById("showNames").onchange=()=>{
   const half = Math.ceil(NOTES.length/2);
   for(let i=0;i<half;i++){
     const a=NOTES[i], b=NOTES[i+half];
-    h += `<tr><td>${a[0].replace("b","♭")}</td><td>${fmt(a[1])}</td>` +
-         (b?`<td>${b[0].replace("b","♭")}</td><td>${fmt(b[1])}</td>`:"<td></td><td></td>") + "</tr>";
+    h += `<tr><td>${pretty(a[0])}</td><td>${fmt(a[1])}</td>` +
+         (b?`<td>${pretty(b[0])}</td><td>${fmt(b[1])}</td>`:"<td></td><td></td>") + "</tr>";
   }
   document.getElementById("chart").innerHTML=h;
 })();
